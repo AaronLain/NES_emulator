@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <stdio.h>
 
 class Bus;
 
@@ -13,6 +14,11 @@ public:
     virtual ~olc6502();
 
 public:
+
+    void ConnectBus(Bus *n) { bus = n;}
+
+    std::map<uint16_t, std::string> disassemble(uint16_t nStart, uint16_t nStop);
+
     enum FLAGS6502{
         C = (1 << 0), // Carry Bit
         Z = (1 << 1), // Zero
@@ -29,9 +35,9 @@ public:
     uint8_t y = 0x00; // y register
     uint8_t stkp = 0x00; // stack pointer
     uint16_t pc = 0x0000; // program counter
-            uint8_t status = 0x00; //status register
+    uint8_t status = 0x00; //status register
 
-    void ConnectBus(Bus *n) { bus = n;}
+
 
     // Addressing Modes
     uint8_t IMP();  uint8_t IMM();
@@ -63,6 +69,8 @@ public:
     void reset();   // reset signal
     void irq();     // interrupt request signal
     void nmi();     // non-maskable interrupt request signal
+
+    bool complete();
 
     uint8_t fetch();
     uint8_t fetched = 0x00;

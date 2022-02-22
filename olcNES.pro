@@ -1,6 +1,6 @@
 QT -= gui
 
-CONFIG += c++11 console
+CONFIG += c++17 console
 CONFIG -= app_bundle
 
 # You can make your code fail to compile if it uses deprecated APIs.
@@ -17,6 +17,10 @@ TRANSLATIONS += \
 CONFIG += lrelease
 CONFIG += embed_translations
 
+INCLUDEPATH += /usr/local/include
+LIBS += -L/usr/local/Cellar/libpng
+
+
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
@@ -24,4 +28,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 HEADERS += \
     bus.h \
-    olc6502.h
+    olc6502.h \
+    olcPixelGameEngine.h
+
+QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.15
