@@ -64,38 +64,44 @@ void olc6502::SetFlag(FLAGS6502 f, bool v){
 
 // Addressing Modes
 
-uint8_t olc6502::IMP() {
+uint8_t olc6502::IMP()
+{
     fetched = a;
     return 0;
 }
 
-uint8_t olc6502::IMM() {
+uint8_t olc6502::IMM()
+{
     addr_abs = pc++;
     return 0;
 }
 
-uint8_t olc6502::ZP0() {
+uint8_t olc6502::ZP0()
+{
     addr_abs = read(pc);
     pc++;
     addr_abs &= 0x00FF;
     return 0;
 }
 
-uint8_t olc6502::ZPX() {
+uint8_t olc6502::ZPX()
+{
     addr_abs = (read(pc) + x);
     pc++;
     addr_abs &= 0x00FF;
     return 0;
 }
 
-uint8_t olc6502::ZPY() {
+uint8_t olc6502::ZPY()
+{
     addr_abs = (read(pc) + y);
     pc++;
     addr_abs &= 0x00FF;
     return 0;
 }
 
-uint8_t olc6502::ABS() {
+uint8_t olc6502::ABS()
+{
     uint16_t lo = read(pc);
     pc++;
     uint16_t hi = read(pc);
@@ -106,7 +112,8 @@ uint8_t olc6502::ABS() {
     return 0;
 }
 
-uint8_t olc6502::ABX() {
+uint8_t olc6502::ABX()
+{
     uint16_t lo = read(pc);
     pc++;
     uint16_t hi = read(pc);
@@ -121,7 +128,8 @@ uint8_t olc6502::ABX() {
         return 0;
 }
 
-uint8_t olc6502::ABY() {
+uint8_t olc6502::ABY()
+{
     uint16_t lo = read(pc);
     pc++;
     uint16_t hi = read(pc);
@@ -136,7 +144,8 @@ uint8_t olc6502::ABY() {
         return 0;
 }
 
-uint8_t olc6502::IND() {
+uint8_t olc6502::IND()
+{
     uint16_t ptr_lo = read(pc);
     pc++;
     uint16_t ptr_hi = read(pc);
@@ -153,7 +162,8 @@ uint8_t olc6502::IND() {
     return 0;
 }
 
-uint8_t olc6502::IZX() {
+uint8_t olc6502::IZX()
+{
 
     uint16_t t = read(pc);
     pc++;
@@ -166,7 +176,8 @@ uint8_t olc6502::IZX() {
     return 0;
 }
 
-uint8_t olc6502::IZY() {
+uint8_t olc6502::IZY()
+{
 
     uint16_t t = read(pc);
     pc++;
@@ -184,7 +195,8 @@ uint8_t olc6502::IZY() {
     }
 }
 
-uint8_t olc6502::REL() {
+uint8_t olc6502::REL()
+{
 
     addr_rel = read(pc);
     pc++;
@@ -194,6 +206,198 @@ uint8_t olc6502::REL() {
 }
 
 // Instructions
+
+uint8_t olc6502::fetch()
+{
+
+    if (!(lookup[opcode].addrmode == &olc6502::IMP))
+        fetched = read(addr_abs);
+    return fetched;
+}
+
+uint8_t olc6502::AND()
+{
+
+    fetch();
+    a = a & fetched;
+    SetFlag(Z, a == 0x00);
+    SetFlag(N, a & 0x80);
+    return 1;
+}
+
+uint8_t olc6502::BCS()
+{
+    if (GetFlag(C) == 1) {
+
+        cycles++;
+        addr_abs = pc + addr_rel;
+
+        if((addr_abs & 0xFF00) != (pc & 0xFF00))
+            cycles++;
+
+        pc = addr_abs;
+    }
+    return 0;
+}
+
+uint8_t olc6502::BCC()
+{
+    if (GetFlag(C) == 0)
+    {
+
+        cycles++;
+        addr_abs = pc + addr_rel;
+
+        if((addr_abs & 0xFF00) != (pc & 0xFF00))
+            cycles++;
+
+        pc = addr_abs;
+    }
+    return 0;
+}
+
+uint8_t olc6502::BEQ()
+{
+    if (GetFlag(Z) == 1)
+    {
+        cycles++;
+        addr_abs = pc + addr_rel;
+
+        if((addr_abs & 0xFF00) != (pc & 0xFF00))
+            cycles++;
+
+        pc = addr_abs;
+    }
+    return 0;
+}
+
+
+uint8_t olc6502::BMI()
+{
+    if (GetFlag(N) == 1)
+    {
+        cycles++;
+        addr_abs = pc + addr_rel;
+
+        if((addr_abs & 0xFF00) != (pc & 0xFF00))
+            cycles++;
+
+        pc = addr_abs;
+    }
+    return 0;
+}
+
+
+uint8_t olc6502::BNE()
+{
+    if (GetFlag(Z) == 0)
+    {
+        cycles++;
+        addr_abs = pc + addr_rel;
+
+        if((addr_abs & 0xFF00) != (pc & 0xFF00))
+            cycles++;
+
+        pc = addr_abs;
+    }
+    return 0;
+}
+
+
+uint8_t olc6502::BPL()
+{
+    if (GetFlag(N) == 0)
+    {
+        cycles++;
+        addr_abs = pc + addr_rel;
+
+        if((addr_abs & 0xFF00) != (pc & 0xFF00))
+            cycles++;
+
+        pc = addr_abs;
+    }
+    return 0;
+}
+
+uint8_t olc6502::BVC()
+{
+    if (GetFlag(V) == 0)
+    {
+        cycles++;
+        addr_abs = pc + addr_rel;
+
+        if((addr_abs & 0xFF00) != (pc & 0xFF00))
+            cycles++;
+
+        pc = addr_abs;
+    }
+    return 0;
+}
+
+uint8_t olc6502::BVS()
+{
+    if (GetFlag(V) == 1)
+    {
+        cycles++;
+        addr_abs = pc + addr_rel;
+
+        if((addr_abs & 0xFF00) != (pc & 0xFF00))
+            cycles++;
+
+        pc = addr_abs;
+    }
+    return 0;
+}
+
+uint8_t olc6502::CLC()
+{
+    SetFlag(C, false);
+    return 0;
+}
+
+uint8_t olc6502::CLD()
+{
+    SetFlag(D, false);
+    return 0;
+}
+
+uint8_t olc6502::CLI()
+{
+    SetFlag(I, false);
+    return 0;
+}
+
+uint8_t olc6502::CLV()
+{
+    SetFlag(C, false);
+    return 0;
+}
+
+// Addition Algorithm: (~((A* XOR R*) & ~(A* XOR D*)) & 0x0080)
+// Where A = Accumulator, R = Result, and D = Data
+// * = most significant bit
+// 0x0080: 8 marks the target bit
+
+uint8_t olc6502::ADC()
+{
+    fetch();
+    uint16_t temp = (uint16_t)a + (uint16_t)fetched + (uint16_t)GetFlag(C);
+    SetFlag(C, temp > 255);
+    SetFlag(Z, (temp & 0x00FF) == 0);
+    SetFlag(N, temp & 0x80);
+    SetFlag(V, (~((uint16_t)a ^ (uint16_t)fetched) & ((uint16_t)a ^ (uint16_t)temp)) & 0x0080);
+    a = temp & 0x00FF;
+    return 1;
+}
+
+uint8_t olc6502::SBC()
+{
+
+}
+
+
+
+
 
 
 
