@@ -8,7 +8,8 @@
 
 class Bus;
 
-class olc6502 {
+class olc6502
+{
 public:
     olc6502();
     virtual ~olc6502();
@@ -19,7 +20,22 @@ public:
 
     std::map<uint16_t, std::string> disassemble(uint16_t nStart, uint16_t nStop);
 
-    enum FLAGS6502{
+    uint8_t a = 0x00; // accumulator register
+    uint8_t x = 0x00; // x register
+    uint8_t y = 0x00; // y register
+    uint8_t stkp = 0x00; // stack pointer
+    uint16_t pc = 0x0000; // program counter
+    uint8_t status = 0x00; //status register
+
+    void clock();
+    void reset();   // reset signal
+    void irq();     // interrupt request signal
+    void nmi();     // non-maskable interrupt request signal
+
+    bool complete();
+
+    enum FLAGS6502
+    {
         C = (1 << 0), // Carry Bit
         Z = (1 << 1), // Zero
         I = (1 << 2), // Disable Interrupts
@@ -30,15 +46,7 @@ public:
         N = (1 << 7), // Negative
     };
 
-    uint8_t a = 0x00; // accumulator register
-    uint8_t x = 0x00; // x register
-    uint8_t y = 0x00; // y register
-    uint8_t stkp = 0x00; // stack pointer
-    uint16_t pc = 0x0000; // program counter
-    uint8_t status = 0x00; //status register
-
-
-
+private:
     // Addressing Modes
     uint8_t IMP();  uint8_t IMM();
     uint8_t ZP0();  uint8_t ZPX();
@@ -47,6 +55,7 @@ public:
     uint8_t ABY();  uint8_t IND();
     uint8_t IZX();  uint8_t IZY();
 
+private:
     // OPcodes
     uint8_t ADC();	uint8_t AND();	uint8_t ASL();	uint8_t BCC();
     uint8_t BCS();	uint8_t BEQ();	uint8_t BIT();	uint8_t BMI();
@@ -65,29 +74,26 @@ public:
 
     uint8_t XXX(); // NO OP
 
-    void clock();
-    void reset();   // reset signal
-    void irq();     // interrupt request signal
-    void nmi();     // non-maskable interrupt request signal
+private:
 
-    bool complete();
+    uint8_t GetFlag(FLAGS6502 f);
+    void    SetFlag(FLAGS6502 f, bool v);
 
-    uint8_t fetch();
     uint8_t fetched = 0x00;
-
+    uint16_t temp = 0x0000;
     uint16_t addr_abs = 0x0000;
     uint16_t addr_rel = 0x00;
     uint8_t opcode = 0x00;
     uint8_t cycles = 0;
+    uint32_t clock_count = 0;
 
+    uint8_t fetch();
 
-private:
     Bus		*bus = nullptr;
     uint8_t read(uint16_t a);
     void 	write(uint16_t a, uint8_t d);
 
-    uint8_t GetFlag(FLAGS6502 f);
-    void    SetFlag(FLAGS6502 f, bool v);
+
 
     struct INSTRUCTION {
 

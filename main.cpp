@@ -14,6 +14,7 @@
 
 int main()
 {
+    olc6502();
     return 0;
 }
 
