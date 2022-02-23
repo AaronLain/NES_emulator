@@ -199,7 +199,6 @@ uint8_t olc6502::IZY()
 
 uint8_t olc6502::REL()
 {
-
     addr_rel = read(pc);
     pc++;
     if (addr_rel & 0x80)
@@ -211,7 +210,6 @@ uint8_t olc6502::REL()
 
 uint8_t olc6502::fetch()
 {
-
     if (!(lookup[opcode].addrmode == &olc6502::IMP))
         fetched = read(addr_abs);
     return fetched;

@@ -20,12 +20,12 @@ public:
 
     std::map<uint16_t, std::string> disassemble(uint16_t nStart, uint16_t nStop);
 
-    uint8_t a = 0x00; // accumulator register
-    uint8_t x = 0x00; // x register
-    uint8_t y = 0x00; // y register
-    uint8_t stkp = 0x00; // stack pointer
-    uint16_t pc = 0x0000; // program counter
-    uint8_t status = 0x00; //status register
+    uint8_t a = 0x00;       // accumulator register
+    uint8_t x = 0x00;       // x register
+    uint8_t y = 0x00;       // y register
+    uint8_t stkp = 0x00;    // stack pointer
+    uint16_t pc = 0x0000;   // program counter
+    uint8_t status = 0x00;  //status register
 
     void clock();
     void reset();   // reset signal
