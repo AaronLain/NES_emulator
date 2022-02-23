@@ -18,7 +18,9 @@ CONFIG += lrelease
 CONFIG += embed_translations
 
 INCLUDEPATH += /usr/local/include
+INCLUDEPATH += /System/Library/Frameworks
 LIBS += -L/usr/local/Cellar/libpng
+
 
 
 # Default rules for deployment.
@@ -29,6 +31,5 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 HEADERS += \
     bus.h \
     olc6502.h \
-    olcPixelGameEngine.h
 
 QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.15

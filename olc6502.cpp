@@ -791,6 +791,14 @@ uint8_t olc6502::SEI()
     return 0;
 }
 
+// Instruction: Store Accumulator at Address
+// Function:    M = A
+uint8_t olc6502::STA()
+{
+    write(addr_abs, a);
+    return 0;
+}
+
 // Instruction: Store X Register at Address
 // Function:    M = X
 uint8_t olc6502::STX()
