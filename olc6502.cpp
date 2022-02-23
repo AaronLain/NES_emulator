@@ -1,8 +1,8 @@
 #include "olc6502.h"
 #include "bus.h"
 
-olc6502::olc6502() {
-
+olc6502::olc6502()
+{
     using a = olc6502;
     lookup = {
 
@@ -384,7 +384,7 @@ uint8_t olc6502::ADC()
 {
     fetch();
 
-    uint16_t temp = (uint16_t)a + (uint16_t)fetched + (uint16_t)GetFlag(C);
+    temp = (uint16_t)a + (uint16_t)fetched + (uint16_t)GetFlag(C);
 
     SetFlag(C, temp > 255);
     SetFlag(Z, (temp & 0x00FF) == 0);
@@ -404,12 +404,13 @@ uint8_t olc6502::SBC()
 
     uint16_t value = ((uint16_t)fetched) ^ 0x00FF;
 
-    uint16_t temp = (uint16_t)a + value + (uint16_t)GetFlag(C);
+    temp = (uint16_t)a + value + (uint16_t)GetFlag(C);
     SetFlag(C, temp & 0xFF00);
     SetFlag(Z, (temp & 0x00FF) == 0);
     SetFlag(N, temp & 0x80);
     SetFlag(V, (temp ^ (uint16_t)a) & (temp ^ value) & 0x0080);
     a = temp & 0x00FF;
+    return 1;
 }
 
 // Instruction: Arithmetic Shift Left
@@ -418,7 +419,7 @@ uint8_t olc6502::SBC()
 uint8_t olc6502::ASL()
 {
     fetch();
-    uint16_t temp = (uint16_t)fetched << 1;
+    temp = (uint16_t)fetched << 1;
     SetFlag(C, (temp & 0xFF00) > 0);
     SetFlag(Z, (temp & 0x00FF) == 0x00);
     SetFlag(N, temp & 0x80);
@@ -432,7 +433,7 @@ uint8_t olc6502::ASL()
 uint8_t olc6502::BIT()
 {
     fetch();
-    uint16_t temp = a & fetched;
+    temp = a & fetched;
     SetFlag(Z, (temp & 0x00FF) == 0x00);
     SetFlag(N, fetched & (1 << 7));
     SetFlag(V, fetched & (1 << 6));
@@ -461,7 +462,7 @@ uint8_t olc6502::BRK()
 uint8_t olc6502::CMP()
 {
     fetch();
-    uint16_t temp = (uint16_t)a - (uint16_t)fetched;
+    temp = (uint16_t)a - (uint16_t)fetched;
     SetFlag(C, a >= fetched);
     SetFlag(Z, (temp & 0x00FF) == 0x0000);
     SetFlag(N, temp & 0x0080);
@@ -471,7 +472,7 @@ uint8_t olc6502::CMP()
 uint8_t olc6502::CPX()
 {
     fetch();
-    uint16_t temp = (uint16_t)x - (uint16_t)fetched;
+    temp = (uint16_t)x - (uint16_t)fetched;
     SetFlag(C, x >= fetched);
     SetFlag(Z, (temp & 0x00FF) == 0x0000);
     SetFlag(N, temp & 0x0080);
@@ -481,7 +482,7 @@ uint8_t olc6502::CPX()
 uint8_t olc6502::CPY()
 {
     fetch();
-    uint16_t temp = (uint16_t)y - (uint16_t)fetched;
+    temp = (uint16_t)y - (uint16_t)fetched;
     SetFlag(C, y >= fetched);
     SetFlag(Z, (temp & 0x00FF) == 0x0000);
     SetFlag(N, temp & 0x0080);
@@ -491,7 +492,7 @@ uint8_t olc6502::CPY()
 uint8_t olc6502::DEC()
 {
     fetch();
-    uint16_t temp = fetched - 1;
+    temp = fetched - 1;
     write(addr_abs, temp & 0x00FF);
     SetFlag(Z, (temp & 0x00FF) == 0x0000);
     SetFlag(N, temp & 0x0080);
@@ -541,7 +542,7 @@ uint8_t olc6502::EOR()
 uint8_t olc6502::INC()
 {
     fetch();
-    uint16_t temp = fetched + 1;
+    temp = fetched + 1;
     write(addr_abs, temp & 0x00FF);
     SetFlag(Z, (temp & 0x00FF) == 0x0000);
     SetFlag(N, temp & 0x0080);
@@ -637,7 +638,7 @@ uint8_t olc6502::LSR()
 {
     fetch();
     SetFlag(C, fetched & 0x0001);
-    uint16_t temp = fetched >> 1;
+    temp = fetched >> 1;
     SetFlag(Z, (temp & 0x00FF) == 0x0000);
     SetFlag(N, temp & 0x0080);
     if (lookup[opcode].addrmode == &olc6502::IMP)
@@ -728,7 +729,7 @@ uint8_t olc6502::PLA()
 uint8_t olc6502::ROL()
 {
     fetch();
-    uint16_t temp = (uint16_t)(fetched << 1) | GetFlag(C);
+    temp = (uint16_t)(fetched << 1) | GetFlag(C);
     SetFlag(C, temp & 0xFF00);
     SetFlag(Z, (temp & 0x00FF) == 0x0000);
     SetFlag(N, temp & 0x0080);
@@ -754,7 +755,7 @@ uint8_t olc6502::RTS()
 uint8_t olc6502::ROR()
 {
     fetch();
-    uint16_t temp = (uint16_t)(GetFlag(C) << 7) | (fetched >> 1);
+    temp = (uint16_t)(GetFlag(C) << 7) | (fetched >> 1);
     SetFlag(C, fetched & 0x01);
     SetFlag(Z, (temp & 0x00FF) == 0x00);
     SetFlag(N, temp & 0x0080);
