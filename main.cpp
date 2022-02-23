@@ -7,10 +7,14 @@
 
 #include <iostream>
 
-int main() {
+#include "bus.h"
+#include "olc6502.h"
 
-	return 0;
+
+
+int main()
+{
+    return 0;
 }
-
 
 

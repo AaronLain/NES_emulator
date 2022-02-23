@@ -64,38 +64,44 @@ void olc6502::SetFlag(FLAGS6502 f, bool v){
 
 // Addressing Modes
 
-uint8_t olc6502::IMP() {
+uint8_t olc6502::IMP()
+{
     fetched = a;
     return 0;
 }
 
-uint8_t olc6502::IMM() {
+uint8_t olc6502::IMM()
+{
     addr_abs = pc++;
     return 0;
 }
 
-uint8_t olc6502::ZP0() {
+uint8_t olc6502::ZP0()
+{
     addr_abs = read(pc);
     pc++;
     addr_abs &= 0x00FF;
     return 0;
 }
 
-uint8_t olc6502::ZPX() {
+uint8_t olc6502::ZPX()
+{
     addr_abs = (read(pc) + x);
     pc++;
     addr_abs &= 0x00FF;
     return 0;
 }
 
-uint8_t olc6502::ZPY() {
+uint8_t olc6502::ZPY()
+{
     addr_abs = (read(pc) + y);
     pc++;
     addr_abs &= 0x00FF;
     return 0;
 }
 
-uint8_t olc6502::ABS() {
+uint8_t olc6502::ABS()
+{
     uint16_t lo = read(pc);
     pc++;
     uint16_t hi = read(pc);
@@ -106,7 +112,8 @@ uint8_t olc6502::ABS() {
     return 0;
 }
 
-uint8_t olc6502::ABX() {
+uint8_t olc6502::ABX()
+{
     uint16_t lo = read(pc);
     pc++;
     uint16_t hi = read(pc);
@@ -121,7 +128,8 @@ uint8_t olc6502::ABX() {
         return 0;
 }
 
-uint8_t olc6502::ABY() {
+uint8_t olc6502::ABY()
+{
     uint16_t lo = read(pc);
     pc++;
     uint16_t hi = read(pc);
@@ -136,7 +144,10 @@ uint8_t olc6502::ABY() {
         return 0;
 }
 
-uint8_t olc6502::IND() {
+
+
+uint8_t olc6502::IND()
+{
     uint16_t ptr_lo = read(pc);
     pc++;
     uint16_t ptr_hi = read(pc);
@@ -153,7 +164,8 @@ uint8_t olc6502::IND() {
     return 0;
 }
 
-uint8_t olc6502::IZX() {
+uint8_t olc6502::IZX()
+{
 
     uint16_t t = read(pc);
     pc++;
@@ -166,7 +178,8 @@ uint8_t olc6502::IZX() {
     return 0;
 }
 
-uint8_t olc6502::IZY() {
+uint8_t olc6502::IZY()
+{
 
     uint16_t t = read(pc);
     pc++;
@@ -184,7 +197,8 @@ uint8_t olc6502::IZY() {
     }
 }
 
-uint8_t olc6502::REL() {
+uint8_t olc6502::REL()
+{
 
     addr_rel = read(pc);
     pc++;
@@ -194,6 +208,905 @@ uint8_t olc6502::REL() {
 }
 
 // Instructions
+
+uint8_t olc6502::fetch()
+{
+
+    if (!(lookup[opcode].addrmode == &olc6502::IMP))
+        fetched = read(addr_abs);
+    return fetched;
+}
+
+uint8_t olc6502::AND()
+{
+
+    fetch();
+    a = a & fetched;
+    SetFlag(Z, a == 0x00);
+    SetFlag(N, a & 0x80);
+    return 1;
+}
+
+uint8_t olc6502::BCS()
+{
+    if (GetFlag(C) == 1) {
+
+        cycles++;
+        addr_abs = pc + addr_rel;
+
+        if((addr_abs & 0xFF00) != (pc & 0xFF00))
+            cycles++;
+
+        pc = addr_abs;
+    }
+    return 0;
+}
+
+uint8_t olc6502::BCC()
+{
+    if (GetFlag(C) == 0)
+    {
+
+        cycles++;
+        addr_abs = pc + addr_rel;
+
+        if((addr_abs & 0xFF00) != (pc & 0xFF00))
+            cycles++;
+
+        pc = addr_abs;
+    }
+    return 0;
+}
+
+uint8_t olc6502::BEQ()
+{
+    if (GetFlag(Z) == 1)
+    {
+        cycles++;
+        addr_abs = pc + addr_rel;
+
+        if((addr_abs & 0xFF00) != (pc & 0xFF00))
+            cycles++;
+
+        pc = addr_abs;
+    }
+    return 0;
+}
+
+
+uint8_t olc6502::BMI()
+{
+    if (GetFlag(N) == 1)
+    {
+        cycles++;
+        addr_abs = pc + addr_rel;
+
+        if((addr_abs & 0xFF00) != (pc & 0xFF00))
+            cycles++;
+
+        pc = addr_abs;
+    }
+    return 0;
+}
+
+
+uint8_t olc6502::BNE()
+{
+    if (GetFlag(Z) == 0)
+    {
+        cycles++;
+        addr_abs = pc + addr_rel;
+
+        if((addr_abs & 0xFF00) != (pc & 0xFF00))
+            cycles++;
+
+        pc = addr_abs;
+    }
+    return 0;
+}
+
+
+uint8_t olc6502::BPL()
+{
+    if (GetFlag(N) == 0)
+    {
+        cycles++;
+        addr_abs = pc + addr_rel;
+
+        if((addr_abs & 0xFF00) != (pc & 0xFF00))
+            cycles++;
+
+        pc = addr_abs;
+    }
+    return 0;
+}
+
+uint8_t olc6502::BVC()
+{
+    if (GetFlag(V) == 0)
+    {
+        cycles++;
+        addr_abs = pc + addr_rel;
+
+        if((addr_abs & 0xFF00) != (pc & 0xFF00))
+            cycles++;
+
+        pc = addr_abs;
+    }
+    return 0;
+}
+
+uint8_t olc6502::BVS()
+{
+    if (GetFlag(V) == 1)
+    {
+        cycles++;
+        addr_abs = pc + addr_rel;
+
+        if((addr_abs & 0xFF00) != (pc & 0xFF00))
+            cycles++;
+
+        pc = addr_abs;
+    }
+    return 0;
+}
+
+uint8_t olc6502::CLC()
+{
+    SetFlag(C, false);
+    return 0;
+}
+
+uint8_t olc6502::CLD()
+{
+    SetFlag(D, false);
+    return 0;
+}
+
+uint8_t olc6502::CLI()
+{
+    SetFlag(I, false);
+    return 0;
+}
+
+uint8_t olc6502::CLV()
+{
+    SetFlag(C, false);
+    return 0;
+}
+
+// Addition Algorithm: (~((A* XOR R*) & ~(A* XOR D*)) & 0x0080)
+// Where A = Accumulator, R = Result, and D = Data
+// * most significant bit
+// 0x0080: the 8 marks the target byte
+
+uint8_t olc6502::ADC()
+{
+    fetch();
+
+    uint16_t temp = (uint16_t)a + (uint16_t)fetched + (uint16_t)GetFlag(C);
+
+    SetFlag(C, temp > 255);
+    SetFlag(Z, (temp & 0x00FF) == 0);
+    SetFlag(N, temp & 0x80);
+    // setting overflow flag
+    SetFlag(V, (~((uint16_t)a ^ (uint16_t)fetched) & ((uint16_t)a ^ (uint16_t)temp)) & 0x0080);
+    a = temp & 0x00FF;
+    return 1;
+}
+
+// Subtraction Algorithm:
+// Where A = Accumulator, M = Data, C = Carry bit
+
+uint8_t olc6502::SBC()
+{
+    fetch();
+
+    uint16_t value = ((uint16_t)fetched) ^ 0x00FF;
+
+    uint16_t temp = (uint16_t)a + value + (uint16_t)GetFlag(C);
+    SetFlag(C, temp & 0xFF00);
+    SetFlag(Z, (temp & 0x00FF) == 0);
+    SetFlag(N, temp & 0x80);
+    SetFlag(V, (temp ^ (uint16_t)a) & (temp ^ value) & 0x0080);
+    a = temp & 0x00FF;
+}
+
+// Instruction: Arithmetic Shift Left
+// Function:    A = C <- (A << 1) <- 0
+// Flags Out:   N, Z, C
+uint8_t olc6502::ASL()
+{
+    fetch();
+    uint16_t temp = (uint16_t)fetched << 1;
+    SetFlag(C, (temp & 0xFF00) > 0);
+    SetFlag(Z, (temp & 0x00FF) == 0x00);
+    SetFlag(N, temp & 0x80);
+    if (lookup[opcode].addrmode == &olc6502::IMP)
+        a = temp & 0x00FF;
+    else
+        write(addr_abs, temp & 0x00FF);
+    return 0;
+}
+
+uint8_t olc6502::BIT()
+{
+    fetch();
+    uint16_t temp = a & fetched;
+    SetFlag(Z, (temp & 0x00FF) == 0x00);
+    SetFlag(N, fetched & (1 << 7));
+    SetFlag(V, fetched & (1 << 6));
+    return 0;
+}
+
+uint8_t olc6502::BRK()
+{
+    pc++;
+
+    SetFlag(I, 1);
+    write(0x0100 + stkp, (pc >> 8) & 0x00FF);
+    stkp--;
+    write(0x0100 + stkp, pc & 0x00FF);
+    stkp--;
+
+    SetFlag(B, 1);
+    write(0x0100 + stkp, status);
+    stkp--;
+    SetFlag(B, 0);
+
+    pc = (uint16_t)read(0xFFFE) | ((uint16_t)read(0xFFFF) << 8);
+    return 0;
+}
+
+uint8_t olc6502::CMP()
+{
+    fetch();
+    uint16_t temp = (uint16_t)a - (uint16_t)fetched;
+    SetFlag(C, a >= fetched);
+    SetFlag(Z, (temp & 0x00FF) == 0x0000);
+    SetFlag(N, temp & 0x0080);
+    return 1;
+}
+
+uint8_t olc6502::CPX()
+{
+    fetch();
+    uint16_t temp = (uint16_t)x - (uint16_t)fetched;
+    SetFlag(C, x >= fetched);
+    SetFlag(Z, (temp & 0x00FF) == 0x0000);
+    SetFlag(N, temp & 0x0080);
+    return 0;
+}
+
+uint8_t olc6502::CPY()
+{
+    fetch();
+    uint16_t temp = (uint16_t)y - (uint16_t)fetched;
+    SetFlag(C, y >= fetched);
+    SetFlag(Z, (temp & 0x00FF) == 0x0000);
+    SetFlag(N, temp & 0x0080);
+    return 0;
+}
+
+uint8_t olc6502::DEC()
+{
+    fetch();
+    uint16_t temp = fetched - 1;
+    write(addr_abs, temp & 0x00FF);
+    SetFlag(Z, (temp & 0x00FF) == 0x0000);
+    SetFlag(N, temp & 0x0080);
+    return 0;
+}
+
+
+// Instruction: Decrement X Register
+// Function:    X = X - 1
+// Flags Out:   N, Z
+uint8_t olc6502::DEX()
+{
+    x--;
+    SetFlag(Z, x == 0x00);
+    SetFlag(N, x & 0x80);
+    return 0;
+}
+
+
+// Instruction: Decrement Y Register
+// Function:    Y = Y - 1
+// Flags Out:   N, Z
+uint8_t olc6502::DEY()
+{
+    y--;
+    SetFlag(Z, y == 0x00);
+    SetFlag(N, y & 0x80);
+    return 0;
+}
+
+// Instruction: Bitwise Logic XOR
+// Function:    A = A xor M
+// Flags Out:   N, Z
+uint8_t olc6502::EOR()
+{
+    fetch();
+    a = a ^ fetched;
+    SetFlag(Z, a == 0x00);
+    SetFlag(N, a & 0x80);
+    return 1;
+}
+
+
+// Instruction: Increment Value at Memory Location
+// Function:    M = M + 1
+// Flags Out:   N, Z
+uint8_t olc6502::INC()
+{
+    fetch();
+    uint16_t temp = fetched + 1;
+    write(addr_abs, temp & 0x00FF);
+    SetFlag(Z, (temp & 0x00FF) == 0x0000);
+    SetFlag(N, temp & 0x0080);
+    return 0;
+}
+
+
+// Instruction: Increment X Register
+// Function:    X = X + 1
+// Flags Out:   N, Z
+uint8_t olc6502::INX()
+{
+    x++;
+    SetFlag(Z, x == 0x00);
+    SetFlag(N, x & 0x80);
+    return 0;
+}
+
+
+// Instruction: Increment Y Register
+// Function:    Y = Y + 1
+// Flags Out:   N, Z
+uint8_t olc6502::INY()
+{
+    y++;
+    SetFlag(Z, y == 0x00);
+    SetFlag(N, y & 0x80);
+    return 0;
+}
+
+uint8_t olc6502::JMP()
+{
+    pc = addr_abs;
+    return 0;
+}
+
+
+// Instruction: Jump To Sub-Routine
+// Function:    Push current pc to stack, pc = address
+uint8_t olc6502::JSR()
+{
+    pc--;
+
+    write(0x0100 + stkp, (pc >> 8) & 0x00FF);
+    stkp--;
+    write(0x0100 + stkp, pc & 0x00FF);
+    stkp--;
+
+    pc = addr_abs;
+    return 0;
+}
+
+
+// Instruction: Load The Accumulator
+// Function:    A = M
+// Flags Out:   N, Z
+uint8_t olc6502::LDA()
+{
+    fetch();
+    a = fetched;
+    SetFlag(Z, a == 0x00);
+    SetFlag(N, a & 0x80);
+    return 1;
+}
+
+
+// Instruction: Load The X Register
+// Function:    X = M
+// Flags Out:   N, Z
+uint8_t olc6502::LDX()
+{
+    fetch();
+    x = fetched;
+    SetFlag(Z, x == 0x00);
+    SetFlag(N, x & 0x80);
+    return 1;
+}
+
+
+// Instruction: Load The Y Register
+// Function:    Y = M
+// Flags Out:   N, Z
+uint8_t olc6502::LDY()
+{
+    fetch();
+    y = fetched;
+    SetFlag(Z, y == 0x00);
+    SetFlag(N, y & 0x80);
+    return 1;
+}
+
+uint8_t olc6502::LSR()
+{
+    fetch();
+    SetFlag(C, fetched & 0x0001);
+    uint16_t temp = fetched >> 1;
+    SetFlag(Z, (temp & 0x00FF) == 0x0000);
+    SetFlag(N, temp & 0x0080);
+    if (lookup[opcode].addrmode == &olc6502::IMP)
+        a = temp & 0x00FF;
+    else
+        write(addr_abs, temp & 0x00FF);
+    return 0;
+}
+
+uint8_t olc6502::NOP()
+{
+    // Sadly not all NOPs are equal, Ive added a few here
+    // based on https://wiki.nesdev.com/w/index.php/CPU_unofficial_opcodes
+    // and will add more based on game compatibility, and ultimately
+    // I'd like to cover all illegal opcodes too
+    switch (opcode) {
+    case 0x1C:
+    case 0x3C:
+    case 0x5C:
+    case 0x7C:
+    case 0xDC:
+    case 0xFC:
+        return 1;
+        break;
+    }
+    return 0;
+}
+
+
+// Instruction: Bitwise Logic OR
+// Function:    A = A | M
+// Flags Out:   N, Z
+uint8_t olc6502::ORA()
+{
+    fetch();
+    a = a | fetched;
+    SetFlag(Z, a == 0x00);
+    SetFlag(N, a & 0x80);
+    return 1;
+}
+
+//push value onto stack
+uint8_t olc6502::PHA()
+{
+    //0x0100 is hardcoded address offset for the 6502 stack pointer
+    write(0x0100 + stkp, a);
+    stkp--;
+    return 0;
+}
+
+// Instruction: Push Status Register to Stack
+// Function:    status -> stack
+// Note:        Break flag is set to 1 before push
+uint8_t olc6502::PHP()
+{
+    write(0x0100 + stkp, status | B | U);
+    SetFlag(B, 0);
+    SetFlag(U, 0);
+    stkp--;
+    return 0;
+}
+
+
+// Instruction: Pop Status Register off Stack
+// Function:    Status <- stack
+uint8_t olc6502::PLP()
+{
+    stkp++;
+    status = read(0x0100 + stkp);
+    SetFlag(U, 1);
+    return 0;
+}
+
+//pop value off the stack
+uint8_t olc6502::PLA()
+{
+    //increment stack pointer
+    stkp++;
+    //reads value on the stack pointer
+    a = read(0x0100 + stkp);
+    // sets zero flag if zero
+    SetFlag(Z, a == 0x00);
+    // sets negative flag if low byte is 1
+    SetFlag(N, a & 0x80);
+    return 0;
+}
+
+uint8_t olc6502::ROL()
+{
+    fetch();
+    uint16_t temp = (uint16_t)(fetched << 1) | GetFlag(C);
+    SetFlag(C, temp & 0xFF00);
+    SetFlag(Z, (temp & 0x00FF) == 0x0000);
+    SetFlag(N, temp & 0x0080);
+    if (lookup[opcode].addrmode == &olc6502::IMP)
+        a = temp & 0x00FF;
+    else
+        write(addr_abs, temp & 0x00FF);
+    return 0;
+}
+
+uint8_t olc6502::RTS()
+{
+    stkp++;
+    pc = (uint16_t)read(0x0100 + stkp);
+    stkp++;
+    pc |= (uint16_t)read(0x0100 + stkp) << 8;
+
+    pc++;
+    return 0;
+}
+
+
+uint8_t olc6502::ROR()
+{
+    fetch();
+    uint16_t temp = (uint16_t)(GetFlag(C) << 7) | (fetched >> 1);
+    SetFlag(C, fetched & 0x01);
+    SetFlag(Z, (temp & 0x00FF) == 0x00);
+    SetFlag(N, temp & 0x0080);
+    if (lookup[opcode].addrmode == &olc6502::IMP)
+        a = temp & 0x00FF;
+    else
+        write(addr_abs, temp & 0x00FF);
+    return 0;
+}
+
+// Instruction: Set Carry Flag
+// Function:    C = 1
+uint8_t olc6502::SEC()
+{
+    SetFlag(C, true);
+    return 0;
+}
+
+
+// Instruction: Set Decimal Flag
+// Function:    D = 1
+uint8_t olc6502::SED()
+{
+    SetFlag(D, true);
+    return 0;
+}
+
+
+// Instruction: Set Interrupt Flag / Enable Interrupts
+// Function:    I = 1
+uint8_t olc6502::SEI()
+{
+    SetFlag(I, true);
+    return 0;
+}
+
+// Instruction: Store Accumulator at Address
+// Function:    M = A
+uint8_t olc6502::STA()
+{
+    write(addr_abs, a);
+    return 0;
+}
+
+// Instruction: Store X Register at Address
+// Function:    M = X
+uint8_t olc6502::STX()
+{
+    write(addr_abs, x);
+    return 0;
+}
+
+
+// Instruction: Store Y Register at Address
+// Function:    M = Y
+uint8_t olc6502::STY()
+{
+    write(addr_abs, y);
+    return 0;
+}
+
+
+// Instruction: Transfer Accumulator to X Register
+// Function:    X = A
+// Flags Out:   N, Z
+uint8_t olc6502::TAX()
+{
+    x = a;
+    SetFlag(Z, x == 0x00);
+    SetFlag(N, x & 0x80);
+    return 0;
+}
+
+
+// Instruction: Transfer Accumulator to Y Register
+// Function:    Y = A
+// Flags Out:   N, Z
+uint8_t olc6502::TAY()
+{
+    y = a;
+    SetFlag(Z, y == 0x00);
+    SetFlag(N, y & 0x80);
+    return 0;
+}
+
+
+// Instruction: Transfer Stack Pointer to X Register
+// Function:    X = stack pointer
+// Flags Out:   N, Z
+uint8_t olc6502::TSX()
+{
+    x = stkp;
+    SetFlag(Z, x == 0x00);
+    SetFlag(N, x & 0x80);
+    return 0;
+}
+
+
+// Instruction: Transfer X Register to Accumulator
+// Function:    A = X
+// Flags Out:   N, Z
+uint8_t olc6502::TXA()
+{
+    a = x;
+    SetFlag(Z, a == 0x00);
+    SetFlag(N, a & 0x80);
+    return 0;
+}
+
+// Instruction: Transfer X Register to Stack Pointer
+// Function:    stack pointer = X
+uint8_t olc6502::TXS()
+{
+    stkp = x;
+    return 0;
+}
+
+
+// Instruction: Transfer Y Register to Accumulator
+// Function:    A = Y
+// Flags Out:   N, Z
+uint8_t olc6502::TYA()
+{
+    a = y;
+    SetFlag(Z, a == 0x00);
+    SetFlag(N, a & 0x80);
+    return 0;
+}
+
+
+// This function captures illegal opcodes
+uint8_t olc6502::XXX()
+{
+    return 0;
+}
+
+void olc6502::reset()
+{
+    a = 0;
+    x = 0;
+    y = 0;
+    stkp = 0xFD;
+    status = 0x00 | U;
+
+    addr_abs = 0xFFFC;
+    uint16_t lo = read(addr_abs + 0);
+    uint16_t hi = read(addr_abs + 1);
+
+    pc = (hi << 8) | lo;
+
+    addr_rel = 0x0000;
+    addr_abs = 0x0000;
+    fetched = 0x00;
+
+    cycles = 8;
+}
+
+//interrupt request
+void olc6502::irq()
+{
+    if (GetFlag(I) == 0)
+    {
+        write(0x0100 + stkp, (pc >> 8) & 0x00FF);
+        stkp--;
+        write(0x0100 + stkp, pc & 0x00FF);
+        stkp--;
+
+        SetFlag(B, 0);
+        SetFlag(U, 1);
+        SetFlag(I, 1);
+        write(0x0100 + stkp, status);
+        stkp--;
+
+        addr_abs = 0xFFFE;
+        uint16_t lo = read(addr_abs +0);
+        uint16_t hi = read(addr_abs + 1);
+        pc = (hi << 8) | lo;
+
+        cycles = 7;
+    }
+}
+
+
+//non masking interrupt request
+void olc6502::nmi()
+{
+    write(0x0100 + stkp, (pc >> 8) & 0x00FF);
+    stkp--;
+    write(0x0100 + stkp, pc & 0x00FF);
+    stkp--;
+
+    SetFlag(B, 0);
+    SetFlag(U, 1);
+    SetFlag(I, 1);
+    write(0x0100 + stkp, status);
+    stkp--;
+
+    addr_abs = 0xFFFA;
+    uint16_t lo = read(addr_abs +0);
+    uint16_t hi = read(addr_abs + 1);
+    pc = (hi << 8) | lo;
+
+    cycles = 8;
+}
+
+// return from interrupt
+uint8_t olc6502::RTI()
+{
+    stkp++;
+    status = read(0x0100 + stkp);
+    status &= ~B;
+    status &= ~U;
+
+    stkp++;
+    pc = (uint16_t)read(0x0100 + stkp);
+    stkp++;
+    pc |= (uint16_t)read(0x0100 + stkp) << 8;
+    return 0;
+}
+
+bool olc6502::complete()
+{
+    return cycles == 0;
+}
+
+
+//DISASSEMBLER
+
+std::map<uint16_t, std::string> olc6502::disassemble(uint16_t nStart, uint16_t nStop)
+{
+    uint32_t addr = nStart;
+    uint8_t value = 0x00, lo = 0x00, hi = 0x00;
+    std::map<uint16_t, std::string> mapLines;
+    uint16_t line_addr = 0;
+
+    // A convenient utility to convert variables into
+    // hex strings because "modern C++"'s method with
+    // streams is atrocious
+    auto hex = [](uint32_t n, uint8_t d)
+    {
+        std::string s(d, '0');
+        for (int i = d - 1; i >= 0; i--, n >>= 4)
+            s[i] = "0123456789ABCDEF"[n & 0xF];
+        return s;
+    };
+
+    // Starting at the specified address we read an instruction
+    // byte, which in turn yields information from the lookup table
+    // as to how many additional bytes we need to read and what the
+    // addressing mode is. I need this info to assemble human readable
+    // syntax, which is different depending upon the addressing mode
+
+    // As the instruction is decoded, a std::string is assembled
+    // with the readable output
+    while (addr <= (uint32_t)nStop)
+    {
+        line_addr = addr;
+
+        // Prefix line with instruction address
+        std::string sInst = "$" + hex(addr, 4) + ": ";
+
+        // Read instruction, and get its readable name
+        uint8_t opcode = bus->read(addr, true); addr++;
+        sInst += lookup[opcode].name + " ";
+
+        // Get oprands from desired locations, and form the
+        // instruction based upon its addressing mode. These
+        // routines mimmick the actual fetch routine of the
+        // 6502 in order to get accurate data as part of the
+        // instruction
+        if (lookup[opcode].addrmode == &olc6502::IMP)
+        {
+            sInst += " {IMP}";
+        }
+        else if (lookup[opcode].addrmode == &olc6502::IMM)
+        {
+            value = bus->read(addr, true); addr++;
+            sInst += "#$" + hex(value, 2) + " {IMM}";
+        }
+        else if (lookup[opcode].addrmode == &olc6502::ZP0)
+        {
+            lo = bus->read(addr, true); addr++;
+            hi = 0x00;
+            sInst += "$" + hex(lo, 2) + " {ZP0}";
+        }
+        else if (lookup[opcode].addrmode == &olc6502::ZPX)
+        {
+            lo = bus->read(addr, true); addr++;
+            hi = 0x00;
+            sInst += "$" + hex(lo, 2) + ", X {ZPX}";
+        }
+        else if (lookup[opcode].addrmode == &olc6502::ZPY)
+        {
+            lo = bus->read(addr, true); addr++;
+            hi = 0x00;
+            sInst += "$" + hex(lo, 2) + ", Y {ZPY}";
+        }
+        else if (lookup[opcode].addrmode == &olc6502::IZX)
+        {
+            lo = bus->read(addr, true); addr++;
+            hi = 0x00;
+            sInst += "($" + hex(lo, 2) + ", X) {IZX}";
+        }
+        else if (lookup[opcode].addrmode == &olc6502::IZY)
+        {
+            lo = bus->read(addr, true); addr++;
+            hi = 0x00;
+            sInst += "($" + hex(lo, 2) + "), Y {IZY}";
+        }
+        else if (lookup[opcode].addrmode == &olc6502::ABS)
+        {
+            lo = bus->read(addr, true); addr++;
+            hi = bus->read(addr, true); addr++;
+            sInst += "$" + hex((uint16_t)(hi << 8) | lo, 4) + " {ABS}";
+        }
+        else if (lookup[opcode].addrmode == &olc6502::ABX)
+        {
+            lo = bus->read(addr, true); addr++;
+            hi = bus->read(addr, true); addr++;
+            sInst += "$" + hex((uint16_t)(hi << 8) | lo, 4) + ", X {ABX}";
+        }
+        else if (lookup[opcode].addrmode == &olc6502::ABY)
+        {
+            lo = bus->read(addr, true); addr++;
+            hi = bus->read(addr, true); addr++;
+            sInst += "$" + hex((uint16_t)(hi << 8) | lo, 4) + ", Y {ABY}";
+        }
+        else if (lookup[opcode].addrmode == &olc6502::IND)
+        {
+            lo = bus->read(addr, true); addr++;
+            hi = bus->read(addr, true); addr++;
+            sInst += "($" + hex((uint16_t)(hi << 8) | lo, 4) + ") {IND}";
+        }
+        else if (lookup[opcode].addrmode == &olc6502::REL)
+        {
+            value = bus->read(addr, true); addr++;
+            sInst += "$" + hex(value, 2) + " [$" + hex(addr + value, 4) + "] {REL}";
+        }
+
+        // Add the formed string to a std::map, using the instruction's
+        // address as the key. This makes it convenient to look for later
+        // as the instructions are variable in length, so a straight up
+        // incremental index is not sufficient.
+        mapLines[line_addr] = sInst;
+    }
+
+    return mapLines;
+}
+
+
+
+
 
 
 
