@@ -26,8 +26,14 @@ public:
     uint8_t ppuRead(uint16_t addr, bool rdonly = false);
     void    ppuWrite(uint16_t addr, uint8_t data);
 
+    bool frame_complete = false;
+
 private:
     std::shared_ptr<Cartridge> cart;
+
+private:
+    int16_t scanline = 0;
+    int16_t cycle = 0;
 
 public:
     // Interface
