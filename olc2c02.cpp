@@ -62,7 +62,17 @@ void olc2C02::ConnectCartridge(const std::shared_ptr<Cartridge>& cartridge)
 
 void olc2C02::clock()
 {
-
+    cycle++;
+    if (cycle >= 341)
+    {
+        cycle = 0;
+        scanline++;
+        if (scanline >= 261)
+        {
+            scanline = -1;
+            frame_complete = true;
+        }
+    }
 }
 
 uint8_t olc2C02::ppuRead(uint16_t addr, bool rdonly)
