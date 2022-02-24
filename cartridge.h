@@ -4,6 +4,7 @@
 
 #include <stdint.h>
 #include <vector>
+#include "mapper.hpp"
 
 class Cartridge
 {
@@ -18,6 +19,8 @@ private:
     uint8_t nMapperID = 0;
     uint8_t nPRGBanks = 0;
     uint8_t nCHRBanks = 0;
+
+    std::shared_ptr<Mapper> pMapper;
 
 public:
     //Main Bus
