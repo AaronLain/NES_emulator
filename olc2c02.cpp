@@ -55,12 +55,31 @@ void olc2C02::cpuWrite(uint16_t addr, uint8_t data)
     }
 }
 
+void olc2C02::ConnectCartridge(const std::shared_ptr<Cartridge>& cartridge)
+{
+    this->cart = cartridge;
+}
+
+void olc2C02::clock()
+{
+
+}
+
 uint8_t olc2C02::ppuRead(uint16_t addr, bool rdonly)
 {
-    return 0;
+    uint8_t data = 0x00;
+    addr &= 0x3FFF;
+
+    if (cart->ppuRead(addr, data))
+    {
+        printf("Address %d", addr);
+    }
+
+    return data;
 }
 
 void olc2C02::ppuWrite(uint16_t addr, uint8_t data)
 {
-    return 0;
+    addr &= 0x3FFF;
 }
+
