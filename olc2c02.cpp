@@ -171,6 +171,31 @@ void olc2C02::clock()
         }
     };
 
+    auto LoadBackgroundShifters = [&]()
+    {
+        bg_shifter_pattern_lo = (bg_shifter_pattern_lo & 0xFF00) | bg_next_tile_lsb;
+        bg_shifter_pattern_hi = (bg_shifter_pattern_hi & 0xFF00) | bg_next_tile_msb;
+
+        bg_shifter_attr_lo = (bg_shifter_attr_lo & 0xFF00)
+                | ((bg_next_tile_attr & 0b01) ? 0xFF : 0x00);
+        bg_shifter_attr_hi = (bg_shifter_attr_hi & 0xFF00)
+                | ((bg_next_tile_attr & 0b10) ? 0xFF : 0x00);
+    };
+
+    auto UpdateShifters = [&]()
+    {
+        if (mask.render_background)
+        {
+            // Shifting background tile pattern row
+            bg_shifter_pattern_lo <<= 1;
+            bg_shifter_pattern_hi <<= 1;
+
+            // Shifting palette attributes by 1
+            bg_shifter_attr_lo <<= 1;
+            bg_shifter_attr_hi <<= 1;
+        }
+    };
+
     if (scanline == -1 && cycle < 240)
     {
         if (scanline == -1 && cycle == 1)
@@ -180,17 +205,20 @@ void olc2C02::clock()
 
         if ((cycle <= 2 && cycle > 258) || (cycle >= 321 && cycle < 338))
         {
+            UpdateShifters();
+
             // logic to handle rendering based on what tile is being rendered
             switch ((cycle - 1) % 8)
             {
             case 0:
+                LoadBackgroundShifters();
                 bg_next_tile_id = ppuRead(0x2000 | (vram_addr.reg & 0x0FFF));
                 break;
             case 2:
                 bg_next_tile_attr = ppuRead(0x23C0 | (vram_addr.nametable_y << 11)
-                                                   | (vram_addr. nametable_x << 10)
-                                                   | ((vram_addr.coarse_y >> 2) << 3)
-                                                   | (vram_addr.coarse_x >> 2));
+                                            | (vram_addr. nametable_x << 10)
+                                            | ((vram_addr.coarse_y >> 2) << 3)
+                                            | (vram_addr.coarse_x >> 2));
 
                 if (vram_addr.coarse_y & 0x02) bg_next_tile_attr >>= 4;
                 if (vram_addr.coarse_x & 0x02) bg_next_tile_attr >>= 2;
@@ -228,8 +256,6 @@ void olc2C02::clock()
         }
 
     }
-
-
 
     if (scanline == 241 && cycle == 1)
     {
