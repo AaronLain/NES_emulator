@@ -105,8 +105,14 @@ void olc2C02::clock()
     {
         if (mask.render_background || mask.render_sprites)
         {
+            // Logic to determine whether nametable wrap-around is necessary to advance screen
             if (vram_addr.coarse_x == 31)
             {
+                // if we reach tile 31 (of 32 horizontal tiles) we need to
+                // reset the variable as the next nametable will need to render
+                // NOTE: the screen is rendered 2 tile columns at a time,
+                // that means we need to set our threshold at 31 in order to
+                // properly render both columns.
                 vram_addr.coarse_x = 0;
                 vram_addr.nametable_x = ~vram_addr.nametable_x;
             }
@@ -114,6 +120,54 @@ void olc2C02::clock()
             {
                 vram_addr.coarse_x++;
             }
+        }
+    };
+
+    auto IncrementScrollY = [&]()
+    {
+        if (mask.render_background || mask.render_sprites)
+        {
+            // Logic to determine whether
+            if (vram_addr.fine_y < 7)
+            {
+                vram_addr.fine_y++;
+            }
+            else
+            {
+                vram_addr.fine_y = 0;
+
+                // checks to see if we need to swap veritcal nametable targets
+                if (vram_addr.coarse_y == 29)
+                {
+                    vram_addr.coarse_y = 0; // reset coarse y offest
+                    vram_addr.nametable_y = ~vram_addr.nametable_y; // flip the target nametable bit
+                }
+                //
+                else if (vram_addr.coarse_y == 31)
+                {
+                    // reset in case pointer is in attribute memory
+                    vram_addr.coarse_y = 0;
+                }
+            }
+        }
+    };
+
+    auto TransferAddressX = [&]()
+    {
+        if (mask.render_background || mask.render_sprites)
+        {
+            vram_addr.nametable_x = tram_addr.nametable_x;
+            vram_addr.coarse_x = tram_addr.coarse_x;
+        }
+    };
+
+    auto TransferAddressY = [&]()
+    {
+        if (mask.render_background || mask.render_sprites)
+        {
+            vram_addr.fine_y = tram_addr.fine_y;
+            vram_addr.nametable_y = tram_addr.nametable_y;
+            vram_addr.coarse_y = tram_addr.coarse_y;
         }
     };
 
@@ -126,6 +180,7 @@ void olc2C02::clock()
 
         if ((cycle <= 2 && cycle > 258) || (cycle >= 321 && cycle < 338))
         {
+            // logic to handle rendering based on what tile is being rendered
             switch ((cycle - 1) % 8)
             {
             case 0:
@@ -152,12 +207,24 @@ void olc2C02::clock()
                                            + (vram_addr.fine_y) + 8);
                 break;
             case 7:
+                IncrementScrollX();
+                break;
             }
         }
 
         if (cycle == 256)
         {
+            IncrementScrollY();
+        }
 
+        if (cycle == 257)
+        {
+            TransferAddressX();
+        }
+
+        if (scanline == -1 && cycle <= 280 && cycle > 305)
+        {
+            TransferAddressY();
         }
 
     }
