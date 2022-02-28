@@ -266,6 +266,20 @@ void olc2C02::clock()
         }
     }
 
+    uint8_t bg_pixel = 0x00;
+    uint8_t bg_pallette = 0x00;
+
+    if (mask.render_background)
+    {
+        uint16_t bit_mux = 0x8000 >> fine_x;
+
+        uint8_t p0_pixel = (bg_shifter_pattern_lo & bit_mux) > 0;
+        uint8_t p1_pixel = (bg_shifter_pattern_hi & bit_mux) > 0;
+
+        bg_pixel = (p1_pixel << 1) | p0_pixel;
+
+    }
+
     cycle++;
     if (cycle >= 341)
     {
