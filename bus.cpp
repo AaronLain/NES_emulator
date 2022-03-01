@@ -25,6 +25,10 @@ void Bus::cpuWrite(uint16_t addr, uint8_t data)
     {
         ppu.cpuWrite(addr & 0x007, data);
     }
+    else if (addr >= 0x4016 && addr <= 0x4017)
+    {
+        controller_state[addr & 0x0001] = controller[addr & 0x0001];
+    }
 }
 
 uint8_t Bus::cpuRead(uint16_t addr, bool bReadOnly)
@@ -38,6 +42,11 @@ uint8_t Bus::cpuRead(uint16_t addr, bool bReadOnly)
     else if (addr >= 0x2000 && addr <= 0x3FFF)
     {
         ppu.cpuRead(addr & 0x007, data);
+    }
+    else if (addr >= 0x4016 && addr <= 0x4017)
+    {
+        data = (controller_state[addr <= 0x0001] & 0x80) > 0;
+        controller_state[addr & 0x0001] <<= 1;
     }
 
     return data;
