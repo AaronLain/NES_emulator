@@ -465,7 +465,58 @@ void olc2C02::clock()
         uint8_t bg_pal0 = (bg_shifter_attr_lo & bit_mux) > 0;
         uint8_t bg_pal1 = (bg_shifter_attr_hi & bit_mux) > 0;
         bg_palette = (bg_pal1 << 1) | bg_pal0;
+    }
 
+    uint8_t fg_pixel = 0x00;
+    uint8_t fg_palette = 0x00;
+    uint8_t fg_priority = 0x00;
+
+    if (mask.render_sprites)
+    {
+        for (uint8_t i = 0; i < sprite_count; i++)
+        {
+            if (spriteScanline[i].x == 0)
+            {
+                uint8_t fg_pixel_lo = (sprite_shifter_pattern_lo[i] & 0x80) > 0;
+                uint8_t fg_pixel_hi = (sprite_shifter_pattern_hi[i] & 0x80) > 0;
+                fg_pixel = (fg_pixel_hi << 1) | fg_pixel_lo;
+
+                fg_palette = (spriteScanline[i].attribute & 0x03) + 0x04;
+                fg_priority = (spriteScanline[i].attribute & 0x20) == 0;
+
+                if (fg_pixel != 0)
+                {
+                    break;
+                }
+            }
+        }
+    }
+
+    uint8_t pixel = 0x00;
+    uint8_t palette = 0x00;
+
+    if (bg_pixel == 0 && fg_pixel == 0)
+    {
+        pixel = 0x00;
+        palette = 0x00;
+    }
+    else if (bg_pixel == 0 && fg_pixel == 0)
+    {
+        pixel = bg_pixel;
+        palette = bg_palette;
+    }
+    else if (bg_pixel > 0 && fg_pixel > 0)
+    {
+        if (fg_priority)
+        {
+            pixel = fg_pixel;
+            palette = fg_palette;
+        }
+        else
+        {
+            pixel = bg_pixel;
+            palette = bg_palette;
+        }
     }
 
     cycle++;
