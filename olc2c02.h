@@ -115,7 +115,28 @@ private:
     uint16_t bg_shifter_attr_lo = 0x0000;
     uint16_t bg_shifter_attr_hi = 0x0000;
 
+private:
+    struct sObjectAttributeEntry
+    {
+        uint8_t y;
+        uint8_t id;
+        uint8_t attribute;
+        uint8_t x;
+    } OAM[64];
+
+    uint8_t oam_addr = 0x00;
+
+    sObjectAttributeEntry spriteScanline[8];
+    uint8_t sprite_count;
+    uint8_t sprite_shifter_pattern_lo[8];
+    uint8_t sprite_shifter_pattern_hi[8];
+
+    bool bSpriteZeroHitPossible = false;
+    bool bSpriteZeroBeingRendered = false;
+
 public:
+    uint8_t* pOAM = (uint8_t*)OAM;
+
     // Interface
     void ConnectCartridge(const std::shared_ptr<Cartridge>& cartridge);
     void clock();
