@@ -74,6 +74,9 @@ void Bus::clock()
 {
     ppu.clock();
 
+    // if DMA transfer requested:
+    // on odd clock cycles read from CPU memory
+    // on even clock cycles write to OAM
     if (nSystemClockCounter % 3 == 0)
     {
         if (dma_transfer)
