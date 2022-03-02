@@ -24,6 +24,7 @@ uint8_t olc2C02::cpuRead(uint16_t addr, bool rdonly)
     case 0x0003: // OAM Address
         break;
     case 0x0004: // OAM Data
+        data= pOAM[oam_addr];
         break;
     case 0x0005: // Scroll
         break;
