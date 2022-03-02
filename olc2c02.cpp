@@ -244,7 +244,7 @@ void olc2C02::clock()
         if (scanline == -1 && cycle == 1)
         {
             status.vertical_blank = 0;
-
+            status.sprite_zero_hit = 0;
             status.sprite_overflow = 0;
 
             for (int i = 0; i < 8; i++)
@@ -321,6 +321,7 @@ void olc2C02::clock()
 
             // search for visible sprite by subtracting y coordinate from the scanline
             uint8_t nOAMEntry = 0;
+            bSpriteZeroHitPossible = false;
             while(nOAMEntry < 64 && sprite_count < 9)
             {
                 // locate visible sprites by subtracting y coordinate from the scanline
@@ -329,6 +330,11 @@ void olc2C02::clock()
                 {
                     if (sprite_count < 8)
                     {
+                        if (nOAMEntry == 0)
+                        {
+                            bSpriteZeroHitPossible = true;
+                        }
+
                         memcpy(&spriteScanline[sprite_count], &OAM[nOAMEntry], sizeof(sObjectAttributeEntry));
                         sprite_count++;
                     }
@@ -473,6 +479,8 @@ void olc2C02::clock()
 
     if (mask.render_sprites)
     {
+        bSpriteZeroBeingRendered = false;
+
         for (uint8_t i = 0; i < sprite_count; i++)
         {
             if (spriteScanline[i].x == 0)
@@ -486,6 +494,11 @@ void olc2C02::clock()
 
                 if (fg_pixel != 0)
                 {
+                    if (i == 0)
+                    {
+                        bSpriteZeroBeingRendered = true;
+                    }
+
                     break;
                 }
             }
@@ -517,7 +530,28 @@ void olc2C02::clock()
             pixel = bg_pixel;
             palette = bg_palette;
         }
-    }
+
+        if (bSpriteZeroHitPossible && bSpriteZeroBeingRendered)
+        {
+            if (mask.render_background & mask.render_sprites)
+            {
+                   if (~(mask.render_background_left | mask.render_sprites_left))
+                    {
+                        if (cycle >= 9 && cycle < 258)
+                        {
+                            status.sprite_zero_hit = 1;
+                        }
+                    }
+                    else
+                    {
+                        if (cycle >= 1 && cycle < 258)
+                        {
+                            status.sprite_zero_hit = 1;
+                        }
+                    }
+                }
+            }
+        }
 
     cycle++;
     if (cycle >= 341)
