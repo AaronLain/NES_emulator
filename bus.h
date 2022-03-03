@@ -3,6 +3,7 @@
 #include <array>
 #include "olc6502.h"
 #include "olc2c02.h"
+#include "olc2a03.h"
 #include "cartridge.h"
 
 
@@ -19,6 +20,9 @@ public:
     // PPU
     olc2C02 ppu;
 
+    //APU
+    olc2A03 apu;
+
     // RAM
     std::array<uint8_t, 2048> cpuRam;
 
@@ -30,6 +34,10 @@ public:
 public:
     void cpuWrite(uint16_t addr, uint8_t data);
     uint8_t cpuRead(uint16_t addr, bool bReadOnly = false);
+
+    void SetSampleFrequency(uint32_t sample_rate);
+
+    double dAudioSample = 0.0;
 
 public:
     void insertCartridge(const std::shared_ptr<Cartridge>& cartridge);

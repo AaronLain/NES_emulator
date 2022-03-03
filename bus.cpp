@@ -11,6 +11,12 @@ Bus::~Bus()
 
 }
 
+void Bus::SetSampleFrequency(uint32_t sample_rate)
+{
+    double dAudioTimePerSystemSample = 1.0 / (double)sample_rate;
+    double dAudioTimePerNESClock = 1.0 / 5369318.0;
+}
+
 void Bus::cpuWrite(uint16_t addr, uint8_t data)
 {
     if (cart->cpuWrite(addr, data))
@@ -24,6 +30,10 @@ void Bus::cpuWrite(uint16_t addr, uint8_t data)
     else if (addr >= 0x2000 && addr <= 0x3FFF)
     {
         ppu.cpuWrite(addr & 0x007, data);
+    }
+    else if ((addr >= 0x4000 && addr <= 0x4013) || addr == 0x4015 || addr == 0x4017)
+    {
+        apu.cpuWrite(addr, data);
     }
     else if (addr == 0x4014)
     {
@@ -73,6 +83,8 @@ void Bus::reset()
 void Bus::clock()
 {
     ppu.clock();
+
+    apu.clock();
 
     // if DMA transfer requested:
     // on odd clock cycles read from CPU memory
