@@ -36,13 +36,17 @@ public:
     uint8_t cpuRead(uint16_t addr, bool bReadOnly = false);
 
     void SetSampleFrequency(uint32_t sample_rate);
-
     double dAudioSample = 0.0;
 
 public:
     void insertCartridge(const std::shared_ptr<Cartridge>& cartridge);
     void reset();
-    void clock();
+    bool clock();
+
+private:
+    double dAudioTimesPerSystemSample = 0.0f;
+    double dAudioTimePerNESClock = 0.0;
+    double dAudioTime = 0.0;
 
 private:
     // Counts how many clock cycles have passed

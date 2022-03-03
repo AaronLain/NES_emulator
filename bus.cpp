@@ -80,7 +80,7 @@ void Bus::reset()
     nSystemClockCounter = 0;
 }
 
-void Bus::clock()
+bool Bus::clock()
 {
     ppu.clock();
 
@@ -125,6 +125,14 @@ void Bus::clock()
         }
     }
 
+    bool bAudioSampleReady = false;
+    dAudioTime += dAudioTimePerNESClock;
+    if (dAudioTime >= dAudioTimesPerSystemSample)
+    {
+        dAudioTime -= dAudioTimesPerSystemSample;
+        dAudioSample = apu.GetOutputSample();
+    }
+
     if (ppu.nmi)
     {
         ppu.nmi = false;
@@ -132,5 +140,7 @@ void Bus::clock()
     }
 
     nSystemClockCounter++;
+
+    return bAudioSampleReady;
 }
 
