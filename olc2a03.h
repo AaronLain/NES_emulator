@@ -20,6 +20,9 @@ public:
 
 private:
 
+    uint32_t frame_clock_counter = 0;
+    uint32_t clock_counter = 0;
+
     struct sequencer
     {
         uint32_t sequence = 0x00000000;
@@ -44,6 +47,7 @@ private:
         }
     };
 
+    sequencer pulse1_seq;
     bool pulse1_enable = false;
     double pulse1_sample = 0.0;
 };
