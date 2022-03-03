@@ -11,10 +11,10 @@ void olc2A03::cpuWrite(uint16_t addr, uint8_t data)
     case 0x4000:
         switch ((data & 0xC0) >> 6)
         {
-        case 0x00: pulse1_seq.sequence = 0b00000001; break;
-        case 0x01: pulse1_seq.sequence = 0b00000011; break;
-        case 0x02: pulse1_seq.sequence = 0b00000111; break;
-        case 0x03: pulse1_seq.sequence = 0b11111100; break;
+        case 0x00: pulse1_seq.sequence = 0b01000000; pulse1_osc.dutycycle = 0.125; break;
+        case 0x01: pulse1_seq.sequence = 0b01100000; pulse1_osc.dutycycle = 0.250; break;
+        case 0x02: pulse1_seq.sequence = 0b01111000; pulse1_osc.dutycycle = 0.500; break;
+        case 0x03: pulse1_seq.sequence = 0b10011111; pulse1_osc.dutycycle = 0.750; break;
         }
         break;
     case 0x4001:
@@ -58,6 +58,8 @@ void olc2A03::clock()
     bool bQuarterFrameClock = false;
     bool bHalfFrameClock = false;
 
+    dGlobalTime += (0.333333333 / 1789773);
+
     if (clock_counter % 6 == 0)
     {
         frame_clock_counter++;
@@ -91,40 +93,35 @@ void olc2A03::clock()
         // Quater frame "beats" adjust the volume envelope
         if (bQuarterFrameClock)
         {
-            pulse1_env.clock(pulse1_halt);
-            pulse2_env.clock(pulse2_halt);
-            noise_env.clock(noise_halt);
+
+
+
+            // Half frame "beats" adjust the note length and
+            // frequency sweepers
+            if (bHalfFrameClock)
+            {
+
+            }
+
+            //        pulse1_seq.clock(pulse1_enable, [](uint32_t &s)
+            //        {
+            //            s = ((s & 0x0001) >> 7) | ((s & 0x00FE) >> 1);
+            //        });
+
+            pulse1_osc.frequency = 1789773.0 / (16.0 * (double)(pulse1_seq.reload + 1));
+            pulse1_sample = pulse1_osc.sample(dGlobalTime);
         }
 
+        clock_counter ++;
+    }
+};
 
-        // Half frame "beats" adjust the note length and
-        // frequency sweepers
-        if (bHalfFrameClock)
-        {
-            pulse1_lc.clock(pulse1_enable, pulse1_halt);
-            pulse2_lc.clock(pulse2_enable, pulse2_halt);
-            noise_lc.clock(noise_enable, noise_halt);
-            pulse1_sweep.clock(pulse1_seq.reload, 0);
-            pulse2_sweep.clock(pulse2_seq.reload, 1);
-        }
+    void olc2A03::reset()
+    {
 
-        pulse1_seq.clock(pulse1_enable, [](uint32_t &s)
-        {
-            s = ((s & 0x0001) >> 7) | ((s & 0x00FE) >> 1);
-        });
-
-        pulse_sample = (double)pulse1_seq.output;
     }
 
-    clock_counter ++;
-}
-
-void olc2A03::reset()
-{
-
-}
-
-double olc2A03::GetOutputSample()
-{
-    return pulse_sample;
-}
+    double olc2A03::GetOutputSample()
+    {
+        return pulse1_sample;
+    }
