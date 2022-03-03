@@ -9,12 +9,22 @@ void olc2A03::cpuWrite(uint16_t addr, uint8_t data)
     switch (addr)
     {
     case 0x4000:
+        switch ((data & 0xC0) >> 6)
+        {
+        case 0x00: pulse1_seq.sequence = 0b00000001; break;
+        case 0x01: pulse1_seq.sequence = 0b00000011; break;
+        case 0x02: pulse1_seq.sequence = 0b00000111; break;
+        case 0x03: pulse1_seq.sequence = 0b11111100; break;
+        }
         break;
     case 0x4001:
         break;
     case 0x4002:
+        pulse1_seq.reload = (pulse1_seq.reload & 0xFF00) | data;
         break;
     case 0x4003:
+        pulse1_seq.reload = (uint16_t)((data & 0x07)) << 8 | (pulse1_seq.reload & 0x00FF);
+        pulse1_seq.timer = pulse1_seq.reload;
         break;
     case 0x4004:
         break;
@@ -31,6 +41,7 @@ void olc2A03::cpuWrite(uint16_t addr, uint8_t data)
     case 0x400E:
         break;
     case 0x4015:
+        pulse1_enable = data & 0x01;
         break;
     case 0x400F:
         break;
